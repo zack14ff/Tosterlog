@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Sky Night - Логи обновлений</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0ff;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* ASCII-анимации фона */
+        .star {
+            position: absolute;
+            font-size: 16px;
+            animation: twinkle 3s infinite;
+            z-index: -1;
+        }
+        
+        .meteor {
+            position: absolute;
+            font-size: 20px;
+            animation: meteor-fall linear forwards;
+            z-index: -1;
+            color: #ffffff;
+            text-shadow: 0 0 10px #4fc3f7;
+        }
+        
+        .planet {
+            position: absolute;
+            font-size: 10px;
+            animation: planet-move linear infinite;
+            z-index: -1;
+            white-space: pre;
+            font-family: monospace;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes meteor-fall {
+            to {
+                transform: translate(100vw, 100vh);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes planet-move {
+            0% { transform: translateX(-100px) translateY(0); }
+            100% { transform: translateX(100vw) translateY(100px); }
+        }
+        
+        /* Основной контент */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+            background: rgba(10, 8, 30, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(103, 58, 183, 0.4);
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #4a3c8f;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ffffff, #00000000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+        
+        /* Поисковик версий */
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+        
+        #version-search {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            background: rgba(20, 15, 45, 0.9);
+            border: 2px solid #5e35b1;
+            border-radius: 50px;
+            color: #e0e0ff;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            transition: all 0.3s;
+            outline: none;
+        }
+        
+        #version-search:focus {
+            border-color: #ff8a00;
+            box-shadow: 0 0 15px rgba(255, 138, 0, 0.5);
+        }
+        
+        .search-results {
+            position: absolute;
+            width: 100%;
+            background: rgba(20, 15, 45, 0.95);
+            border: 1px solid #5e35b1;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 0.5rem;
+            display: none;
+            z-index: 10;
+        }
+        
+        .result-item {
+            padding: 1rem;
+            border-bottom: 1px solid #3a2c6d;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .result-item:hover {
+            background: rgba(94, 53, 177, 0.3);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .version-highlight {
+            background: rgba(255, 138, 0, 0.3);
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+        
+        /* Секция логов */
+        .update-logs {
+            margin-top: 2rem;
+        }
+        
+        .log-entry {
+            background: rgba(30, 25, 60, 0.7);
+            border-left: 3px solid #ff8a00;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 0 8px 8px 0;
+            transition: transform 0.3s;
+        }
+        
+        .log-entry:hover {
+            transform: translateY(-5px);
+            background: rgba(40, 35, 80, 0.8);
+        }
+        
+        .version-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .version-title {
+            font-size: 1.8rem;
+            color: #ff8a00;
+            font-weight: bold;
+        }
+        
+        .version-date {
+            font-size: 0.9rem;
+            color: #a594f9;
+        }
+        
+        .log-content {
+            margin-top: 1rem;
+            padding-left: 1rem;
+            border-left: 2px solid #5e35b1;
+        }
+        
+        .log-content p {
+            margin-bottom: 0.8rem;
+        }
+        
+        .features-list {
+            list-style-type: none;
+            margin-top: 1rem;
+        }
+        
+        .features-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .features-list li::before {
+            content: '✦';
+            position: absolute;
+            left: 0;
+            color: #4fc3f7;
+        }
+        
+        /* Иконки Lucide */
+        .icon-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+            gap: 15px;
+        }
+        
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(94, 53, 177, 0.3);
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .icon-box:hover {
+            background: rgba(255, 138, 0, 0.5);
+            transform: translateY(-3px);
+        }
+        
+        /* Футер */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #a594f9;
+            font-size: 0.9rem;
+            border-top: 1px solid #4a3c8f;
+            margin-top: 2rem;
+        }
+        
+        .ascii-art {
+            font-family: monospace;
+            white-space: pre;
+            color: #4fc3f7;
+            margin: 1rem 0;
+            font-size: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- ASCII-анимации фона -->
+    <div id="ascii-background"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">PurToster_SLy</div>
+            <div class="search-container">
+                <input type="text" id="version-search" placeholder="Поиск версий...">
+                <div class="search-results" id="search-results"></div>
+            </div>
+        </header>
+        
+        <main>
+            <div class="update-logs">
+                <!-- Логи обновлений будут вставлены сюда -->
+            </div>
+        </main>
+        
+        <footer>
+            <div class="icon-container" id="icon-container">
+                <!-- Иконки Lucide будут вставлены сюда -->
+            </div>
+            <div class="ascii-art" id="ascii-art">
+            </div>
+            <p>© 2025 PurToster_SLy | Логи обновлений в стиле ночного неба</p>
+        </footer>
+    </div>
+
+    <script>
+        // Инициализация иконок Lucide
+        lucide.createIcons();
+        
+        // Генерация ASCII-анимаций фона
+        function generateBackground() {
+            const background = document.getElementById('ascii-background');
+            
+            // Создаем звезды
+            for (let i = 0; i < 150; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                star.textContent = Math.random() > 0.5 ? '.' : '*';
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                star.style.fontSize = `${Math.random() * 10 + 12}px`;
+                background.appendChild(star);
+            }
+            
+            // Создаем метеориты
+            setInterval(() => {
+                const meteor = document.createElement('div');
+                meteor.classList.add('meteor');
+                meteor.textContent = '>----->';
+                meteor.style.left = `${Math.random() * 30}vw`;
+                meteor.style.top = `${Math.random() * 30}vh`;
+                meteor.style.animationDuration = `${Math.random() * 2 + 1}s`;
+                background.appendChild(meteor);
+                
+                // Удаление метеорита после анимации
+                setTimeout(() => {
+                    meteor.remove();
+                }, 3000);
+            }, 2000);
+            
+            // Создаем планеты
+            const planets = [
+                `
+   .-"-.
+ .'     '.
+/         \\
+|         |
+\\         /
+ '.     .'
+   '-.-'
+                `,
+                `
+   .-"-.
+ .'     '.
+/  o   o  \\
+|         |
+\\  .---.  /
+ '.     .'
+   '-.-'
+                `,
+                `
+   .-"-.
+ .'     '.
+/  O   O  \\
+|    |    |
+\\   '-'  /
+ '.     .'
+   '-.-'
+                `
+            ];
+            
+            for (let i = 0; i < 5; i++) {
+                const planet = document.createElement('div');
+                planet.classList.add('planet');
+                planet.textContent = planets[Math.floor(Math.random() * planets.length)];
+                planet.style.left = `${-100}px`;
+                planet.style.top = `${Math.random() * 100}vh`;
+                planet.style.animationDuration = `${Math.random() * 40 + 30}s`;
+                planet.style.fontSize = `${Math.random() * 4 + 8}px`;
+                background.appendChild(planet);
+            }
+            
+            // ASCII-арт в футере
+            const asciiArt = `
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                          ++++   +++++  +++++           +++++                       
+                                   ++++                         ++++ ++++++++++   ++++++++++        
+                         +++++++++ ++                               +++++++++++++++++++++++++++     
+                        ++++++++++                                 +++++++++++++++++++++++++++++    
+                 +++++ +++++++++++                               ++++++++++++++++++++++++++++++++   
+               ++++++++++++++++++++++++++                       +++++++++++++++++++++++++++++++++   
+              ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
+               +++++++++    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
+                +++++++   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+                +++++++ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     
+             ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
+             +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+              ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+               ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
+           +++  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     
+           ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++       
+          ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   ++     
+          +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      +++    
+         +++++++++   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  +++   +++    
+         ++++++++    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++         
+         ++++++++    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++       
+         +++++++++   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ++++++++  ++    
+         ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   +++++   ++    
+         ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   ++++++++      
+         ++    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  +++++++++      
+               ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ++    
+         +++   +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ +++    
+          ++ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++            
+          +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    +      
+            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  +++     
+           +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      
+            +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++         
+             ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++         
+            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++        
+             ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++         
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++         
+               +++  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++         
+                   +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++          
+                    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++           
+                    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++                 
+                  ++++++++++ +++++++++++++++++++++++++++++++++++++++++++++++++++++                  
+                 ++++++++ +++ ++++++++++++++++++++++++++     ++++++++++++  ++                       
+                ++++++        ++++++++++++++++++++++++++++++++++++++++++ ++++                       
+               +++++           +++++++++++  ++++++++++++++++++++++   +                              
+                                    +++++      +++++++++++++++++++++++                              
+                                       ++   +++++++++++++++++++++++                                 
+                                               +   +++++  ++++++++                                  
+                                                                                                    
+                                                                                                    
+            `;
+            document.getElementById('ascii-art').textContent = asciiArt;
+        }
+        
+        // Данные логов обновлений
+        const updateLogs = [
+            {
+                version: "v1.0.0_BETA",
+                date: "2025-08.07",
+                title: "BETA NEWSS",
+                content: "BETA VERSION SITE",
+                features: [
+                    "web-interaction",
+                    "future update",
+                    "More"
+                ]
+            }
+        ];
+        
+        // Иконки для использования
+        const icons = ['star', 'moon', 'sun', 'cloud', 'github', 'search', 'code', 'download'];
+        
+        // Отображение логов обновлений
+        function displayUpdateLogs() {
+            const logsContainer = document.querySelector('.update-logs');
+            logsContainer.innerHTML = '';
+            
+            updateLogs.forEach(log => {
+                const logEntry = document.createElement('div');
+                logEntry.classList.add('log-entry');
+                
+                logEntry.innerHTML = `
+                    <div class="version-header">
+                        <div class="version-title">${log.version}</div>
+                        <div class="version-date">${log.date}</div>
+                    </div>
+                    <h3>${log.title}</h3>
+                    <div class="log-content">
+                        <p>${log.content}</p>
+                        <ul class="features-list">
+                            ${log.features.map(feature => `<li>${feature}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                
+                logsContainer.appendChild(logEntry);
+            });
+        }
+        
+        // Поиск версий
+        function setupSearch() {
+            const searchInput = document.getElementById('version-search');
+            const resultsContainer = document.getElementById('search-results');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                resultsContainer.innerHTML = '';
+                
+                if (searchTerm.length < 2) {
+                    resultsContainer.style.display = 'none';
+                    return;
+                }
+                
+                const filteredLogs = updateLogs.filter(log => 
+                    log.version.toLowerCase().includes(searchTerm) || 
+                    log.title.toLowerCase().includes(searchTerm) ||
+                    log.content.toLowerCase().includes(searchTerm)
+                );
+                
+                if (filteredLogs.length === 0) {
+                    resultsContainer.innerHTML = '<div class="result-item">Версии не найдены</div>';
+                    resultsContainer.style.display = 'block';
+                    return;
+                }
+                
+                filteredLogs.forEach(log => {
+                    const resultItem = document.createElement('div');
+                    resultItem.classList.add('result-item');
+                    
+                    // Подсветка совпадений
+                    const highlightedVersion = log.version.replace(
+                        new RegExp(searchTerm, 'gi'), 
+                        match => `<span class="version-highlight">${match}</span>`
+                    );
+                    
+                    resultItem.innerHTML = `
+                        <strong>${highlightedVersion}</strong>
+                        <div>${log.title}</div>
+                        <small>${log.date}</small>
+                    `;
+                    
+                    resultItem.addEventListener('click', () => {
+                        searchInput.value = '';
+                        resultsContainer.style.display = 'none';
+                        
+                        // Прокрутка к найденной версии
+                        const versionElement = [...document.querySelectorAll('.version-title')]
+                            .find(el => el.textContent === log.version);
+                        
+                        if (versionElement) {
+                            versionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            versionElement.parentElement.parentElement.style.animation = 'pulse 2s';
+                            
+                            setTimeout(() => {
+                                versionElement.parentElement.parentElement.style.animation = '';
+                            }, 2000);
+                        }
+                    });
+                    
+                    resultsContainer.appendChild(resultItem);
+                });
+                
+                resultsContainer.style.display = 'block';
+            });
+            
+            // Скрытие результатов при клике вне области поиска
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                    resultsContainer.style.display = 'none';
+                }
+            });
+        }
+        
+        // Добавление иконок Lucide
+        function addLucideIcons() {
+            const iconContainer = document.getElementById('icon-container');
+            
+            icons.forEach(iconName => {
+                const iconBox = document.createElement('div');
+                iconBox.classList.add('icon-box');
+                
+                const icon = document.createElement('i');
+                icon.setAttribute('data-lucide', iconName);
+                iconBox.appendChild(icon);
+                
+                iconContainer.appendChild(iconBox);
+            });
+            
+            // Переинициализация иконок после добавления
+            lucide.createIcons();
+        }
+        
+        // Пульсирующая анимация для подсветки
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes pulse {
+                0% { box-shadow: 0 0 0 0 rgba(255, 138, 0, 0.7); }
+                70% { box-shadow: 0 0 0 15px rgba(255, 138, 0, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(255, 138, 0, 0); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            generateBackground();
+            displayUpdateLogs();
+            setupSearch();
+            addLucideIcons();
+        });
+    </script>
+</body>
+</html>
