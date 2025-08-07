@@ -1,0 +1,2 @@
+# Tosterlog
+Cheat log
